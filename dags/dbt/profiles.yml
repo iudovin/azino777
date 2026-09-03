@@ -1,0 +1,14 @@
+gaming_dwh:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: postgres
+      user: "{{ env_var('POSTGRES_USER', 'admin') }}"
+      password: "{{ env_var('POSTGRES_PASSWORD', 'admin') }}"
+      port: 5432
+      dbname: "{{ env_var('POSTGRES_DB', 'datastack') }}"
+      schema: dds
+      threads: 4
+      keepalives_idle: 0
+      connect_timeout: 10

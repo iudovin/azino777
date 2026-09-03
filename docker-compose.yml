@@ -1,0 +1,92 @@
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: datastack
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d datastack"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Одноразовый init-контейнер Airflow (накатывает миграции, создает юзера и connection)
+  airflow-init:
+    image: apache/airflow:2.9.2
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://admin:admin@postgres/datastack
+    command: >
+      bash -c "
+      airflow db migrate &&
+      airflow users create --username admin --password admin --firstname Admin --lastname Admin --role Admin --email admin@example.com &&
+      airflow connections add 'postgres_conn' --conn-type 'postgres' --conn-host 'postgres' --conn-schema 'datastack' --conn-login 'admin' --conn-password 'admin' --conn-port 5432
+      "
+
+  # Основной сервис Airflow
+  airflow:
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://admin:admin@postgres/datastack
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    volumes:
+      - ./dags:/opt/airflow/dags
+    ports:
+      - "8080:8080"
+    command: bash -c "airflow webserver & airflow scheduler"
+    
+  # Сервис инициализации: миграции, создание админа и импорт архива
+  superset-init:
+    build:
+      context: .
+      dockerfile: Dockerfile.superset
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SUPERSET_SECRET_KEY: 'super_secret_key_67'
+    volumes:
+      - superset_home:/app/superset_home
+      - ./superset_assets:/app/superset_assets # <--- Проброс папки с архивом
+    command: >
+      bash -c "
+      superset db upgrade &&
+      superset fab create-admin --username admin --firstname Admin --lastname Admin --email admin@example.com --password admin &&
+      superset init &&
+      if [ -f /app/superset_assets/dashboard_export.zip ]; then
+        superset import-dashboards -p /app/superset_assets/dashboard_export.zip --username admin
+      fi
+      "
+
+  # Основной веб-сервер Superset
+  superset:
+    build:
+      context: .
+      dockerfile: Dockerfile.superset
+    depends_on:
+      superset-init:
+        condition: service_completed_successfully
+    ports:
+      - "8088:8088"
+    environment:
+      SUPERSET_SECRET_KEY: 'super_secret_key_67'
+    volumes:
+      - superset_home:/app/superset_home
+      - ./superset_assets:/app/superset_assets # <--- Доступен и в основном контейнере
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+
+volumes:
+  superset_home:

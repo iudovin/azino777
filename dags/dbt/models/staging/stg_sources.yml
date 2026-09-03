@@ -1,0 +1,13 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: raw
+    tables:
+      - name: players
+      - name: currency_rates
+      - name: providers_map
+      - name: games_map
+      - name: deposits
+      - name: withdrawals
+      - name: games
