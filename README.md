@@ -6,7 +6,7 @@
 
 1.
 ```
-git clone https://github.com/iudovin/azino777.git
+git clone https://github.com/iudovin/azino777.git && cd azino777
 ```
 2.
 ```
@@ -36,7 +36,7 @@ docker compose up -d --build
 | Сервис | Образ / Сборка | Хост | Порт | 
 | --- | --- | --- | --- | 
 | **postgres** | `postgres:13`<br> | `postgres`<br> | `5432`<br> | 
-| **airflow** | `apache/airflow:2.9.2`<br> | `airflow` | `8080`<br> | 
+| **airflow** | Сборка из `Dockerfile.airflow`<br> | `airflow` | `8080`<br> | 
 | **superset** | Сборка из `Dockerfile.superset`<br> | `superset` | `8088`<br> | 
 
 ## 4. Порядок запуска DAG-ов в Airflow
