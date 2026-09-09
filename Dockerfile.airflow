@@ -13,3 +13,6 @@ USER airflow
 RUN python -m venv /opt/airflow/dbt_venv && \
     /opt/airflow/dbt_venv/bin/pip install --no-cache-dir --upgrade pip && \
     /opt/airflow/dbt_venv/bin/pip install --no-cache-dir dbt-postgres
+
+# Драйверы для Kafka-стриминга (CSV -> Kafka -> PostgreSQL) и ClickHouse (витрины dm)
+RUN pip install --no-cache-dir kafka-python clickhouse-driver

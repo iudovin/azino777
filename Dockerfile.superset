@@ -5,4 +5,7 @@ USER root
 RUN /app/.venv/bin/python -m ensurepip --upgrade && \
     /app/.venv/bin/python -m pip install --no-cache-dir psycopg2-binary
 
+# 2. Драйвер ClickHouse для слоя витрин (dm)
+RUN /app/.venv/bin/python -m pip install --no-cache-dir "clickhouse-connect>=0.7.0"
+
 USER superset
