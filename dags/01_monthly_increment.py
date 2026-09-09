@@ -1,5 +1,6 @@
 from airflow import DAG
 from airflow.decorators import task
+from airflow.hooks.base import BaseHook
 from airflow.operators.bash import BashOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from datetime import datetime
@@ -9,16 +10,25 @@ import csv
 import time
 
 POSTGRES_CONN_ID = 'postgres_conn'
+CLICKHOUSE_CONN_ID = 'clickhouse_conn'
 CSV_DIR = '/opt/airflow/dags/csv'
 DBT_BIN = '/opt/airflow/dbt_venv/bin/dbt'
 DBT_DIR = '/opt/airflow/dags/dbt'
 
 KAFKA_BOOTSTRAP_SERVERS = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'kafka:9092')
-CH_HOST = os.getenv('CLICKHOUSE_HOST', 'clickhouse')
-CH_PORT = int(os.getenv('CLICKHOUSE_PORT', '9000'))
-CH_USER = os.getenv('CLICKHOUSE_USER', 'admin')
-CH_PASSWORD = os.getenv('CLICKHOUSE_PASSWORD', 'admin')
-CH_DB = 'dm'
+
+
+def get_clickhouse_client():
+    from clickhouse_driver import Client
+
+    conn = BaseHook.get_connection(CLICKHOUSE_CONN_ID)
+    return Client(
+        host=conn.host,
+        port=conn.port or 9000,
+        user=conn.login,
+        password=conn.password,
+        database=conn.schema or 'dm',
+    )
 
 TABLES = [
     'providers_map',
@@ -178,7 +188,7 @@ with DAG(
                 )
                 rows = cur.fetchall()
 
-        client = Client(host=CH_HOST, port=CH_PORT, user=CH_USER, password=CH_PASSWORD, database=CH_DB)
+        client = get_clickhouse_client()
         try:
             client.execute("TRUNCATE TABLE dm.monthly_summary")
             if rows:

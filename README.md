@@ -8,12 +8,16 @@
 ```
 git clone https://github.com/iudovin/azino777.git && cd azino777
 ```
-2.
+2. Создать файл окружения с кредами (обязательно — мусор `CLICKHOUSE_*` не хардкодится в исходниках):
+```
+cp .env.example .env   # при необходимости отредактируйте значения
+```
+3.
 ```
 docker compose up -d --build
 ```
-3. http://localhost:8080/ -> admin/admin, запускаем DAG 00_... -> снимаем с паузы 01_...
-4. http://localhost:8088/ -> admin/admin
+4. http://localhost:8080/ -> admin/admin, запускаем DAG 00_... -> снимаем с паузы 01_...
+5. http://localhost:8088/ -> admin/admin
 
 ## 1. Стек 
 
@@ -28,8 +32,13 @@ docker compose up -d --build
 Развертывание проекта выполняется из корневой директории командой:
 
 ```bash
+# 1) создать .env с кредами ClickHouse (пример в .env.example)
+cp .env.example .env
+# 2) поднять стек
 docker compose up -d --build
 ```
+
+Креды ClickHouse (`CLICKHOUSE_*`) берутся из `.env` (файл в `.gitignore`). При старте `airflow-init` автоматически создаёт подключение `clickhouse_conn` в Airflow; даги читают его через `BaseHook` — логины/пароли в коде не хардкодятся.
 
 ## 3. Конфигурация контейнеров и сетевые порты
 

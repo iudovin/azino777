@@ -1,17 +1,27 @@
 from airflow import DAG
 from airflow.decorators import task
+from airflow.hooks.base import BaseHook
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from datetime import datetime
-import os
 
 # Идентификатор подключения к PostgreSQL в Airflow Connections
 POSTGRES_CONN_ID = 'postgres_conn'
+# Идентификатор подключения к ClickHouse в Airflow Connections (креды не хардкодятся)
+CLICKHOUSE_CONN_ID = 'clickhouse_conn'
 
-# Параметры подключения к ClickHouse (передаются через env в docker-compose для сервиса airflow)
-CH_HOST = os.getenv('CLICKHOUSE_HOST', 'clickhouse')
-CH_PORT = int(os.getenv('CLICKHOUSE_PORT', '9000'))
-CH_USER = os.getenv('CLICKHOUSE_USER', 'admin')
-CH_PASSWORD = os.getenv('CLICKHOUSE_PASSWORD', 'admin')
+
+def get_clickhouse_client():
+    from clickhouse_driver import Client
+
+    conn = BaseHook.get_connection(CLICKHOUSE_CONN_ID)
+    return Client(
+        host=conn.host,
+        port=conn.port or 9000,
+        user=conn.login,
+        password=conn.password,
+        database=conn.schema or 'dm',
+    )
+
 
 with DAG(
     dag_id='00_init_dwh',
@@ -32,9 +42,7 @@ with DAG(
     # Создание витрины в ClickHouse (слой dm)
     @task(task_id='init_clickhouse_dm')
     def init_clickhouse_dm():
-        from clickhouse_driver import Client
-
-        client = Client(host=CH_HOST, port=CH_PORT, user=CH_USER, password=CH_PASSWORD, database='default')
+        client = get_clickhouse_client()
         try:
             client.execute("CREATE DATABASE IF NOT EXISTS dm")
             client.execute(
@@ -57,3 +65,4 @@ with DAG(
     init_dm = init_clickhouse_dm()
 
     apply_full_database_ddl >> init_dm
+

@@ -18,8 +18,8 @@ services:
     image: clickhouse/clickhouse-server:24.3
     hostname: clickhouse
     environment:
-      CLICKHOUSE_USER: admin
-      CLICKHOUSE_PASSWORD: admin
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
       CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
     ports:
       - "8123:8123"
@@ -67,11 +67,17 @@ services:
         condition: service_healthy
     environment:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://admin:admin@postgres/datastack
+      CLICKHOUSE_HOST: ${CLICKHOUSE_HOST:-clickhouse}
+      CLICKHOUSE_PORT: ${CLICKHOUSE_PORT:-9000}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
+      CLICKHOUSE_DB: ${CLICKHOUSE_DB:-dm}
     command: >
       bash -c "
       airflow db migrate &&
       airflow users create --username admin --password admin --firstname Admin --lastname Admin --role Admin --email admin@example.com &&
-      airflow connections add 'postgres_conn' --conn-type 'postgres' --conn-host 'postgres' --conn-schema 'datastack' --conn-login 'admin' --conn-password 'admin' --conn-port 5432
+      airflow connections add 'postgres_conn' --conn-type 'postgres' --conn-host 'postgres' --conn-schema 'datastack' --conn-login 'admin' --conn-password 'admin' --conn-port 5432 &&
+      airflow connections add 'clickhouse_conn' --conn-type 'clickhouse' --conn-host \"\$${CLICKHOUSE_HOST}\" --conn-port \$${CLICKHOUSE_PORT} --conn-login \"\$${CLICKHOUSE_USER}\" --conn-password \"\$${CLICKHOUSE_PASSWORD}\" --conn-schema \"\$${CLICKHOUSE_DB}\"
       "
 
   # Основной сервис Airflow
@@ -93,10 +99,6 @@ services:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      CLICKHOUSE_HOST: clickhouse
-      CLICKHOUSE_PORT: 9000
-      CLICKHOUSE_USER: admin
-      CLICKHOUSE_PASSWORD: admin
     volumes:
       - ./dags:/opt/airflow/dags
     ports:

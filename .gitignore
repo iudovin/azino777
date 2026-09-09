@@ -1,0 +1,15 @@
+# Секреты/локальные настройки
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+
+# dbt артефакты
+dags/dbt/logs/
+dags/dbt/target/
+dags/dbt/.user.yml
+dags/dbt/dbt_packages/
+
+# Jupyter
+.ipynb_checkpoints/
