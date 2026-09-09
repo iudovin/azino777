@@ -5,9 +5,9 @@ description: null
 default_endpoint: null
 offset: 0
 cache_timeout: null
-catalog: datastack
+catalog: null
 schema: dm
-sql: null
+sql: ''
 params: null
 template_params: null
 filter_select_enabled: true
@@ -25,22 +25,49 @@ metrics:
   description: null
   d3format: null
   currency: null
-  extra: null
+  extra:
+    warning_markdown: ''
   warning_text: null
 columns:
-- column_name: country
+- column_name: sum_withdrawals_usd
   verbose_name: null
   is_dttm: false
   is_active: true
-  type: VARCHAR
+  type: DECIMAL(38, 2)
   advanced_data_type: null
   groupby: true
   filterable: true
-  expression: null
+  expression: ''
   description: null
   python_date_format: null
   datetime_format: null
-  extra: null
+  extra: {}
+- column_name: sum_bets_usd
+  verbose_name: null
+  is_dttm: false
+  is_active: true
+  type: DECIMAL(38, 2)
+  advanced_data_type: null
+  groupby: true
+  filterable: true
+  expression: ''
+  description: null
+  python_date_format: null
+  datetime_format: null
+  extra: {}
+- column_name: sum_deposits_usd
+  verbose_name: null
+  is_dttm: false
+  is_active: true
+  type: DECIMAL(38, 2)
+  advanced_data_type: null
+  groupby: true
+  filterable: true
+  expression: ''
+  description: null
+  python_date_format: null
+  datetime_format: null
+  extra: {}
 - column_name: report_month
   verbose_name: null
   is_dttm: true
@@ -49,49 +76,23 @@ columns:
   advanced_data_type: null
   groupby: true
   filterable: true
-  expression: null
+  expression: ''
   description: null
   python_date_format: null
-  datetime_format: null
-  extra: null
-- column_name: sum_withdrawals_usd
+  datetime_format: '%Y-%m-%d'
+  extra: {}
+- column_name: country
   verbose_name: null
   is_dttm: false
   is_active: true
-  type: NUMERIC
+  type: STRING
   advanced_data_type: null
   groupby: true
   filterable: true
-  expression: null
+  expression: ''
   description: null
   python_date_format: null
   datetime_format: null
-  extra: null
-- column_name: sum_bets_usd
-  verbose_name: null
-  is_dttm: false
-  is_active: true
-  type: NUMERIC
-  advanced_data_type: null
-  groupby: true
-  filterable: true
-  expression: null
-  description: null
-  python_date_format: null
-  datetime_format: null
-  extra: null
-- column_name: sum_deposits_usd
-  verbose_name: null
-  is_dttm: false
-  is_active: true
-  type: NUMERIC
-  advanced_data_type: null
-  groupby: true
-  filterable: true
-  expression: null
-  description: null
-  python_date_format: null
-  datetime_format: null
-  extra: null
+  extra: {}
 version: 1.0.0
-database_uuid: 7d09802a-b751-4e53-b157-64e296829194
+database_uuid: 4230675e-bb0f-4c36-94ac-4187a030410a
