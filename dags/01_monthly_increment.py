@@ -22,12 +22,13 @@ def get_clickhouse_client():
     from clickhouse_driver import Client
 
     conn = BaseHook.get_connection(CLICKHOUSE_CONN_ID)
+    # Подключаемся к существующей БД 'default'; таблица везде указывается полностью (dm.monthly_summary).
     return Client(
         host=conn.host,
         port=conn.port or 9000,
         user=conn.login,
         password=conn.password,
-        database=conn.schema or 'dm',
+        database='default',
     )
 
 TABLES = [
