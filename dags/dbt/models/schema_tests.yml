@@ -1,0 +1,17 @@
+version: 2
+
+models:
+  - name: dim_players
+    columns:
+      - name: player_id
+        tests:
+          - not_null
+          - unique
+
+  - name: fct_deposits
+    columns:
+      - name: player_id
+        tests:
+          - relationships:
+              to: ref('dim_players')
+              field: player_id
